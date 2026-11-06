@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.fieldset-hide {
+    display: none;
+}
+</style>
+<div style="display: none;" id="form-1" class="row">
+    <div class="col-4">
+        <form id="configuration-form" action="{% url 'ads:new-2' %}" method="POST">
+            {% csrf_token %}
+            {{ configuration_form.non_field_errors }}
+            <fieldset id="form-1-marketing-objective">
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.marketing_objective.errors }}
+                {% for radio in configuration_form.marketing_objective %}
+                    <div class="custom-control custom-radio">
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}" class="custom-control-label">{{ radio.choice_label }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            </fieldset>
+            <fieldset class="fieldset-hide" id="form-1-name">
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.name.erros }}
+                <label for="{{ configuration_form.name.id_for_label }}">Ad's name: </label>
+                {{ configuration_form.name }}
+            </div>
+            </fieldset>
+            <fieldset class="fieldset-hide" id="form-1-website-and-country-and-range">
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.website.erros }}
+                <label for="{{ configuration_form.website.id_for_label }}">Website: </label>
+                {{ configuration_form.website }}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.country.errors }}
+                <label for="{{ configuration_form.country.id_for_label }}">Country: </label>
+                {{ configuration_form.country }}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.number.erros }}
+                <label for="{{ configuration_form.number.id_for_label }}">Range: </label>
+                <div class="slidecontainer">
+                {{ configuration_form.number }}
+                </div>
+            </div>
+            </fieldset>
+            <button class="btn btn-primary px-3 fieldset-hide" type="submit">Next</button>
+        </form >
+    </div>
+</div>
+<div id="form-2" style="display: none;" class="row">
+    <div class="col-4">
+        <form id="audience-form" style="display: inline;" action="{% url 'ads:new-3' %}" method="POST">
+            {% csrf_token %}
+            {{ audience_form.non_field_errors }}
+            <div class="fieldWrapper pb-2">
+                {{ audience_form.community.errors }}
+                <label for="{{ audience_form.community.id_for_label }}">Audience: </label>
+                {{ audience_form.community }}
+            </div>
+            <input id="previous-btn-2" class="btn btn-secondary px-3" type="button" value="Previous">
+            <button class="btn btn-primary px-3" type="submit">Next</button>
+        </form>
+    </div>
+</div>
+<div id="form-3" style="display: none;" class="row">
+    <div class="col-4">
+        <form id="billing-form" style="display: inline;" action="{% url 'ads:new-4' %}" method="POST">
+            {% csrf_token %}
+            {{ billing_form.non_field_errors }}
+            <div class="fieldWrapper pb-2">
+                {{ billing_form.daily_budget.errors }}
+                <label for="{{ billing_form.daily_budget.id_for_label }}">Daily budget: </label>
+                {{ billing_form.daily_budget }}
+            </div>
+            <input id="previous-btn-3" class="btn btn-secondary px-3" type="button" value="Previous">
+            <button class="btn btn-primary px-3" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+
+    var form1MarketingObjective = $("#form-1-marketing-objective")
+    var form1Name = $("#form-1-name")
+    var form1WebsiteAndCountryAndRange = $("#form-1-website-and-country-and-range")
+    var form1Btn = $("#form-1").find("button")
+
+    var adObjStatus = "{{ ad_obj.status }}"
+    var configurationObjSubmitted = "{{ configuration_obj.submitted }}"
+    var audienceObjSubmitted = "{{ audience_obj.submitted }}"
+    var billingObjSubmitted = "{{ billing_obj.submitted }}"
+
+    if (configurationObjSubmitted == "False") {
+        $("#form-1").show()
+        form1MarketingObjective.on('change', function(){
+            form1Name.fadeIn()
+            form1Name.keypress(function(){
+                form1WebsiteAndCountryAndRange.fadeIn()
+                form1Btn.css("display", "block")
+        });
+    });
+    } else if (audienceObjSubmitted == "False") {
+        $("#form-2").show()
+    } else if (billingObjSubmitted == "False") {
+        $("#form-3").show()
+    } else {
+        $("#finished").show()
+    }
+
+    if (adObjStatus == "ONGOING") {
+        window.location.href = "{% url 'ads:new' %}"
+    }
+
+    var configurationForm = $("#configuration-form")
+    var audienceForm = $("#audience-form")
+    var billingForm = $("#billing-form")
+
+    configurationForm.submit(function(event){
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            method: httpMethod,
+            data: formData,
+            success: function(data) {
+                $("#form-1").hide()
+                $("#form-2").show()
+            },
+            error: function(errorData) {
+                $.alert({
+                    title: "Error",
+                    content: "Something went wrong. The form was not submitted",
+                    theme: "supervan"
+                });
+            }
+        });
+    });
+
+    audienceForm.submit(function(event) {
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            method: httpMethod,
+            data: formData,
+            success: function(data) {
+                $("#form-2").hide()
+                $("#form-3").show()
+            },
+            error: function(errorData) {
+                $.alert({
+                    title: "Error",
+                    content: "Something went wrong. Form was not submitted",
+                    theme: "supervan"
+                });
+            }
+        });   
+    });
+
+    billingForm.submit(function(event) {
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            method: httpMethod,
+            data: formData,
+            success: function(data) {
+                $.alert({
+                    title: "Success",
+                    content: data.message,
+                    theme: "supervan",
+                    escapeKey: false,
+                    buttons: {
+                        close: {
+                            text: "OK",
+                            keys: ['esc',],
+                            action: function() {
+                                window.location.href  = "{% url 'ads:new' %}"
+                            }
+                        }
+                    }
+                });
+                window.setTimeout(function() {
+                    window.location.href = "{% url 'ads:new' %}"
+                }, 3500);
+            },
+            error: function(errorData) {
+                $.alert({
+                    title: "Error",
+                    content: "Something went wrong. Form was not submitted",
+                    theme: "supervan"
+                });
+            }
+        });
+    });
+
+    var previousBtn2 = audienceForm.find("#previous-btn-2")
+    var previousBtn3 = billingForm.find("#previous-btn-3")
+
+    previousBtn2.on('click', function(){
+        $("#form-1").show()
+        $("#form-2").hide()
+    });
+    previousBtn3.on('click', function() {
+        $("#form-2").show()
+        $("#form-3").hide()
+    });
+});
+</script>
+{% endblock javascript %}

@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div id="configuration-form" style="display: none;" class="row">
+    <div class="col-4">
+        <form id="form-1" action="{% url 'ads:new-2' %}" method="POST">
+            {% csrf_token %}
+            {{ configuration_form.non_field_errors }}
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.marketing_objective.errors }}
+                <label for="{{ configuration_form.marketing_objective.id_for_label }}">Marketing objective: </label>
+                {% for radio in configuration_form.marketing_objective %}
+                    <div class="custom-control custom-radio">
+                        {{ radio.tag }}
+                        <label for="{{ radio.id_for_label }}" class="custom-control-label">{{ radio.choice_label }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.name.erros }}
+                <label for="{{ configuration_form.name.id_for_label }}">Ad's name: </label>
+                {{ configuration_form.name }}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.website.erros }}
+                <label for="{{ configuration_form.website.id_for_label }}">Website: </label>
+                {{ configuration_form.website }}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.country.errors }}
+                <label for="{{ configuration_form.country.id_for_label }}">Country: </label>
+                {{ configuration_form.country }}
+            </div>
+            <div class="fieldWrapper form-group pb-2">
+                {{ configuration_form.number.erros }}
+                <label for="{{ configuration_form.number.id_for_label }}">Range: </label>
+                <div class="slidecontainer">
+                {{ configuration_form.number }}
+                </div>
+            </div>
+            <button class="btn btn-primary px-3" type="submit">Next</button>
+        </form >
+    </div>
+</div>
+<div id="audience-form" style="display: none;" class="row">
+    <div class="col-4">
+        <form id="form-2" action="{% url 'ads:new-3' %}" method="POST">
+            {% csrf_token %}
+            {{ audience_form.non_field_errors }}
+            <div class="fieldWrapper pb-2">
+                {{ audience_form.community.errors }}
+                <label for="{{ audience_form.community.id_for_label }}">Audience: </label>
+                {{ audience_form.community }}
+            </div>
+            <input id="previous-btn-2" class="btn btn-secondary px-3" type="button" value="Previous">
+            <button class="btn btn-primary px-3" type="submit">Next</button>
+        </form>
+    </div>
+</div>
+<div id="billing-form" style="display: none;" class="row">
+    <div class="col-4">
+        <form id="form-3" action="{% url 'ads:new-4' %}" method="POST">
+            {% csrf_token %}
+            {{ billing_form.non_field_errors }}
+            <div class="fieldWrapper pb-2">
+                {{ billing_form.daily_budget.errors }}
+                <label for="{{ billing_form.daily_budget.id_for_label }}">Daily budget: </label>
+                {{ billing_form.daily_budget }}
+            </div>
+            <input id="previous-btn-3" class="btn btn-secondary px-3" type="button" value="Previous">
+            <button class="btn btn-primary px-3" type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(document).ready(function(){
+    var configurationForm = $("#configuration-form")
+    var audienceForm = $("#audience-form")
+    var billingForm = $("#billing-form")
+    var form1 = $("#form-1")
+    var form2 = $("#form-2")
+    var form3 = $("#form-3")
+
+    $.ajax({
+        url: "{% url 'ads:ajax-get-form' %}",
+        type: "GET",
+        dataType: "json",
+        success: function(data) {
+            if (!data.configurationObjSubmitted) {
+                configurationForm.css("display", "block")
+            }
+            if (data.configurationObjSubmitted && !data.audienceObjSubmitted) {
+                audienceForm.css("display", "block")
+            }
+            if (data.audienceObjSubmitted && !data.billingObjSubmitted) {
+                billingForm.css("display", "block")
+            }
+            if (data.adEnded) {
+                window.location.href = "{% url 'home' %}"
+            }
+        },
+        error: function(errorData) {
+            console.log(errorData)
+            console.log("Error")
+        }
+    })
+
+    form1.submit(function(event) {
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            type: httpMethod,
+            data: formData,
+            success: function(response) {
+                if (response.configurationObjSubmitted) {
+                    configurationForm.css("display", "none")
+                    audienceForm.fadeIn("slow")
+                } else {
+                    console.log("configurationObjSubmitted is false")
+                }
+            },
+            error: function(errorData) {
+                console.log(errorData)
+                console.log("Error")
+            }
+        })
+    })
+
+    form2.submit(function(event) {
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            type: httpMethod,
+            data: formData,
+            success: function(response) {
+                if (response.audienceObjSubmitted) {
+                    audienceForm.css("display", "none")
+                    billingForm.fadeIn("slow")
+                } else {
+                    console.log("audienceObjSubmitted is false")
+                }
+            },
+            error: function(errorData) {
+                console.log(errorData)
+                console.log("Error")
+            }
+        })
+    })
+    form3.submit(function(event) {
+        event.preventDefault()
+        var thisForm = $(this)
+        var actionEndpoint = thisForm.attr("action")
+        var httpMethod = thisForm.attr("method")
+        var formData = thisForm.serialize()
+
+        $.ajax({
+            url: actionEndpoint,
+            type: httpMethod,
+            data: formData,
+            success: function(response) {
+                if (response.billingObjSubmitted) {
+                    $.alert({
+                        title: "Success",
+                        content: response.msg,
+                        theme: "supervan",
+                        buttons: {
+                            ok: {
+                                text: "OK",
+                                keys: ['esc', 'enter'],
+                                action: function() {
+                                    window.location.href = "{% url 'ads:new' %}"
+                                }
+                            }
+                        },
+                        backgroundDismiss: true,
+                        escapeKey: 'ok'
+                    })
+                    setTimeout(function(){window.location.href = "{% url 'ads:new' %}"}, 1500)
+                } else {
+                    console.log("Something went wrong, ad was not create.")
+                }
+            },
+            error: function(errorData) {
+                console.log(errorData)
+                console.log("Error")
+            }
+        })
+    })
+})
+</script>
+{% endblock javascript %}
+    

@@ -1,0 +1,43 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+#myLinks {
+    margin-top: 20px;
+    position: relative;
+}
+#myLinks li {
+    width: 297.663px;
+}
+
+#myLinks a {
+    padding: 8px 80px;
+    color: rgba(22, 20, 20, 0.664);
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.innerContent {
+    margin: 5% 1%;
+}
+
+.container .nav-link {
+    position: relative;
+    z-index: 99999;
+}
+
+.panel {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.788);
+    border-radius: 3px;
+    cursor: pointer;
+    z-index: 0;
+    box-shadow: 2px 5px 20px rgba(209, 14, 14, 0.479);
+}
+
+#myLinks li a.active {
+    color: white !important;
+}

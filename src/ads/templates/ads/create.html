@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="col-10 border mt-4" id="body">
+    <h3 class="m-2 text-primary d-flex justify-content-center">Ad</h3>
+    <p class="lead d-flex justify-content-center">Complete all the steps to place your Ad</p>
+<ul class="nav bg-light text-center d-flex justify-content-center" id="myLinks" role="tablist">
+    <li class="nav-item">
+        <a href="#configuration-form" class="nav-link active" data-toggle="tab" role="tab">Configuration</a>
+    </li>
+    <li class="nav-item">
+        <a href="#audience-form" class="nav-link disabled" data-toggle="tab" role="tab">Audience</a>
+    </li>
+    <li class="nav-item">
+        <a href="#billing-form" class="nav-link disabled" data-toggle="tab" role="tab">Billing</a>
+    </li>
+    <div class="panel rounded"></div>
+</ul>
+<div class="tab-content my-3" id="myTabs">
+<div id="configuration-form" class="tab-pane fade show active" role="tabpanel">
+    <div class="innerContent">
+    <form id="form-1" action="{% url 'ads:new-2' %}" method="POST">
+        {% csrf_token %}
+        {{ configuration_form.non_field_errors }}
+        <div class="fieldWrapper form-group pb-2">
+            {{ configuration_form.marketing_objective.errors }}
+            <label for="{{ configuration_form.marketing_objective.id_for_label }}">Marketing objective: </label>
+            {% for radio in configuration_form.marketing_objective %}
+                <div class="custom-control custom-radio">
+                    {{ radio.tag }}
+                    <label for="{{ radio.id_for_label }}" class="custom-control-label">{{ radio.choice_label }}</label>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="fieldWrapper form-group pb-2">
+            {{ configuration_form.name.erros }}
+            <label for="{{ configuration_form.name.id_for_label }}">Ad's name: </label>
+            {{ configuration_form.name }}
+        </div>
+        <div class="fieldWrapper form-group pb-2">
+            {{ configuration_form.website.erros }}
+            <label for="{{ configuration_form.website.id_for_label }}">Website: </label>
+            {{ configuration_form.website }}
+        </div>
+        <div class="fieldWrapper form-group pb-2">
+            {{ configuration_form.country.errors }}
+            <label for="{{ configuration_form.country.id_for_label }}">Country: </label>
+            {{ configuration_form.country }}
+        </div>
+        <div class="fieldWrapper form-group pb-2">
+            {{ configuration_form.number.erros }}
+            <label for="{{ configuration_form.number.id_for_label }}">Range: </label>
+            <div class="slidecontainer">
+            {{ configuration_form.number }}
+            </div>
+        </div>
+        <button class="btn btn-primary px-3" type="submit">Next</button>
+    </form>
+    </div>
+</div>
+<div id="audience-form" class="tab-pane fade" role="tabpanel">
+    <div class="innerContent">
+    <form id="form-2" action="{% url 'ads:new-3' %}" method="POST">
+        {% csrf_token %}
+        {{ audience_form.non_field_errors }}
+        <div class="fieldWrapper pb-2">
+            {{ audience_form.community.errors }}
+            <label for="{{ audience_form.community.id_for_label }}">Audience: </label>
+            {{ audience_form.community }}
+        </div>
+        <input id="previous-btn-2" class="btn btn-secondary px-3" type="button" value="Previous">
+        <button class="btn btn-primary px-3" type="submit">Next</button>
+    </form>
+    </div>
+</div>
+<div id="billing-form" class="tab-pane fade" role="tabpanel">
+    <div class="innerContent">
+    <form id="form-3" action="{% url 'ads:new-4' %}" method="POST">
+        {% csrf_token %}
+        {{ billing_form.non_field_errors }}
+        <div class="fieldWrapper pb-2">
+            {{ billing_form.daily_budget.errors }}
+            <label for="{{ billing_form.daily_budget.id_for_label }}">Daily budget: </label>
+            {{ billing_form.daily_budget }}
+        </div>
+        <input id="previous-btn-3" class="btn btn-secondary px-3" type="button" value="Previous">
+        <button class="btn btn-primary px-3" type="submit">Submit</button>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+$(document).ready(function(){
+    var panel = $(".panel").css("width");
+    var width = panel.replace("px", "");
+    console.log(width)
+    var i = 0;
+
+    $("#body ul li").each(function(){
+        i++;
+    })
+    
+    var val1 = width/i;
+
+    $(".panel").css("width", val1+"px");
+
+    $("#body ul li:nth-child(1)").on("click", function(){
+        $(".panel").animate({
+            left: "0px"
+        })
+    });
+
+    $("#body ul li:nth-child(2)").on("click", function(){
+        $(".panel").animate({
+            left: val1 - 10 + "px"
+        })
+    });
+
+    $("#body ul li:nth-child(3)").on("click", function(){
+        $(".panel").animate({
+            left: val1 + val1 + "px"
+        })
+    });
+
+
+
+    var configurationForm = $("#configuration-form")
+    var audienceForm = $("#audience-form")
+    var billingForm = $("#billing-form")
+
+    var form1 = $("#form-1")
+    var form2 = $("#form-2")
+    var form3 = $("#form-3")
+
+    // $("#myLinks li a").not("[data-toggle]").addClass("disabled");
+
+    $('#myLinks li a[data-toggle="tab"]').on('show.bs.tab', function(e) {
+        localStorage.setItem('activeTab', $(e.target).attr('href'));
+	});
+    var activeTab = localStorage.getItem('activeTab')
+	if(activeTab){
+        $('#myLinks li a[href="' + activeTab + '"]').removeClass('disabled').tab('show');
+        $('#myLinks li a[href="' + activeTab + '"]').parent().prevAll().find('a').removeClass("disabled")
+	}
+
+    $("#myTabs form").on('submit', function(e){
+        e.preventDefault()
+        var linkHref = $(this).parents('.tab-pane').attr('id')
+        $("#myLinks li")
+            .find('a[href="#' + linkHref + '"]')
+            .parent()
+            .next()
+            .find('a')
+            .removeClass("disabled")
+            .tab('show')
+    })
+})
+</script>
+{% endblock javascript %}
+    

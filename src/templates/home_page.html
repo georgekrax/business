@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Home page</h1>
+    <a href="https://api.instagram.com/oauth/authorize/?client_id=fbcc55f279754d9f9779f61030548ddc&redirect_uri=http://localhost:8000/response/&response_type=code">Login with Instagram</a>
+{% endblock content %}
+
+<!-- {% block javascript %}
+<script>
+$(document).ready(function(){
+    var access_token = "";
+    if (window.location.search.includes("code")) {
+        access_token = window.location.search
+        window.location.href = "{% url 'ads:new' %}"
+        console.log(access_token)
+    }
+});
+</script>
+{% endblock javascript %} -->
